@@ -4,7 +4,7 @@ from tkinter import ttk
 import os
 import json
 
-STORAGE_PATH = "../storage/data.json"
+STORAGE_PATH = "storage/data.json"
 WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 500
 
@@ -29,8 +29,14 @@ def save_user(name):
         with open(STORAGE_PATH, "w") as f:
             json.dump({"user": {"name": name}}, f)
     else:
-        print("Could not save user")
-        return None
+        # create the file
+        try:
+            os.makedirs(os.path.dirname(STORAGE_PATH), exist_ok=True)
+        except Exception as e:
+            print(f"Error creating directory: {e}")
+            return None
+        with open(STORAGE_PATH, "w") as f:
+            json.dump({"user": {"name": name}}, f)
 
 def create_user(root, frame):
     # Configure the frame with padding
@@ -61,37 +67,39 @@ def create_user(root, frame):
     name_entry.grid(column=1, row=2, padx=10)
     
     # Create button
+    def on_create():
+        name = name_entry.get().strip()
+        if name:  # Only proceed if name is not empty
+            save_user(name)
+            # Clear all widgets from the frame
+            for widget in frame.winfo_children():
+                widget.destroy()
+            # Show main window content
+            main_window(root, frame)
+    
     ttk.Button(
         frame,
         text="Create",
-        command=lambda: save_user(name_entry.get())
+        command=on_create
     ).grid(column=2, row=2, padx=(10, 0))
     
     # Center the frame in the window
     frame.place(relx=0.5, rely=0.5, anchor=CENTER)
-    
-    return name_entry.get()
 
 def main_window(root, frame):
-    
     user = fetch_user()
 
-    if (user is None):
-        user = create_user(root, frame)
+    if user is None:
+        create_user(root, frame)
+        return
+    
+    # reset frame to top left
+    frame.place(relx=0, rely=0, anchor=NW)
 
-    if (user is None):
-        print("Could not find or create user")
-        # abort the program
-        exit(1)
-
-    # create the main window
     ttk.Label(frame, text=f"Hello, {user}!", font=("Helvetica", 16, "bold")).grid(column=0, row=0)
-    ttk.Label(frame, text=f"Here is your todo list:").grid(column=0, row=1)
-
+    ttk.Label(frame, text="Here is your todo list:").grid(column=0, row=1)
 
     return root, frame
-
-
 
 def main():
     # create the main window, 100x100
