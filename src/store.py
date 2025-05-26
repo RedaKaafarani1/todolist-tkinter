@@ -1,5 +1,4 @@
 # This file is used to store the data for the todo list
-
 import json
 
 class Store:

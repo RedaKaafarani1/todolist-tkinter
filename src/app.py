@@ -67,15 +67,15 @@ def add_todo(frame, user_data, todo_entry, no_data_label):
     # check if todos entry is empty
     if todo_entry.get().strip() == "":
         return
-    # add the new todo to the user data
-    user_data["todos"].append(todo_entry.get().strip())
-    # save the user data to the store, it should be added to the user data
+    # add the new todo as a dict with checked state
+    user_data["todos"].append({"text": todo_entry.get().strip(), "checked": False})
+    # save the user data to the store
     STORE.set_data({"user": user_data})
-    display_todos(frame, user_data)
     # check if there is data and delete the label "looks like you have no todos yet!"
     if "todos" in user_data and len(user_data["todos"]) > 0:
         if no_data_label is not None:
             no_data_label.destroy()
+    display_todos(frame, user_data)
 
 def display_todos(frame, user_data):
     # create new frame for the todos
@@ -96,8 +96,21 @@ def display_todos(frame, user_data):
         for index, todo in enumerate(todos):
             ttk.Label(
                 todos_frame,
-                text=f"{index + 1}. {todo}"
+                text=f"{index + 1}. {todo['text']}"
             ).grid(column=0, row=1 + index, pady=(5, 0), sticky="w")  # Left-aligned in the box
+            var = BooleanVar(value=todo.get("checked", False))
+            def make_toggle_callback(idx, var):
+                def toggle():
+                    user_data["todos"][idx]["checked"] = var.get()
+                    STORE.set_data({"user": user_data})
+                return toggle
+            check_box = ttk.Checkbutton(
+                todos_frame,
+                variable=var,
+                style="green.TCheckbutton",
+                command=make_toggle_callback(index, var)
+            )
+            check_box.grid(column=1, row=1 + index, pady=(5, 0), sticky="w")
 
 def main_window(root, frame):
     user = fetch_user()
