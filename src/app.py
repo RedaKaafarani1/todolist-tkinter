@@ -60,7 +60,7 @@ def create_user(root, frame):
         command=on_create
     ).grid(column=2, row=2, padx=(10, 0))
 
-def add_todo(frame, user_data, todo_entry, no_data_label):
+def add_todo(frame, user_data, todo_entry, no_data_label, add_button):
     # check if todos entry exists
     if "todos" not in user_data:
         user_data["todos"] = []
@@ -75,6 +75,8 @@ def add_todo(frame, user_data, todo_entry, no_data_label):
     if "todos" in user_data and len(user_data["todos"]) > 0:
         if no_data_label is not None:
             no_data_label.destroy()
+    todo_entry.delete(0, END)
+    add_button.configure(state="disabled")
     display_todos(frame, user_data)
 
 def display_todos(frame, user_data):
@@ -140,8 +142,13 @@ def main_window(root, frame):
     ttk.Label(frame, text="Add a new todo:", font=("Helvetica", 12, "bold"), justify="center").grid(column=1, row=2, pady=(5, 0))
     todo_entry = ttk.Entry(frame, width=30)
     todo_entry.grid(column=1, row=3, padx=10)
-    ttk.Button(frame, text="Add", command=(lambda: add_todo(frame,user_data, todo_entry, no_data_label))).grid(column=1, row=4, pady=(10, 0))
-
+    # disable add button if todo entry is empty
+    add_button = ttk.Button(frame, text="Add")
+    add_button.grid(column=1, row=4, pady=(10, 0))
+    add_button.configure(state="disabled")
+    add_button.config(cursor="hand2", command= lambda: add_todo(frame,user_data, todo_entry, no_data_label, add_button))
+    # enable add button if todo entry is not empty
+    todo_entry.bind("<KeyRelease>", lambda event: add_button.configure(state="normal" if todo_entry.get().strip() else "disabled"))
     return root, frame
 
 def main():
