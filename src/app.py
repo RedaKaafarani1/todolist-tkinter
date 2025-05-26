@@ -86,6 +86,9 @@ def make_toggle_callback(idx, var, user_data):
     return toggle
 
 def display_todos(frame, user_data):
+    # check if there is a todos frame
+    if hasattr(frame, "todos_frame") and frame.todos_frame is not None:
+        frame.todos_frame.destroy()
     # create new frame for the todos
     todos_frame = ttk.Frame(frame, padding="10", style="lightgray.TFrame")
     todos_frame.configure(borderwidth=2, relief="solid")
