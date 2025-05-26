@@ -79,6 +79,12 @@ def add_todo(frame, user_data, todo_entry, no_data_label, add_button):
     add_button.configure(state="disabled")
     display_todos(frame, user_data)
 
+def make_toggle_callback(idx, var, user_data):
+    def toggle():
+        user_data["todos"][idx]["checked"] = var.get()
+        STORE.set_data({"user": user_data})
+    return toggle
+
 def display_todos(frame, user_data):
     # create new frame for the todos
     todos_frame = ttk.Frame(frame, padding="10", style="lightgray.TFrame")
@@ -101,16 +107,11 @@ def display_todos(frame, user_data):
                 text=f"{index + 1}. {todo['text']}"
             ).grid(column=0, row=1 + index, pady=(5, 0), sticky="w")  # Left-aligned in the box
             var = BooleanVar(value=todo.get("checked", False))
-            def make_toggle_callback(idx, var):
-                def toggle():
-                    user_data["todos"][idx]["checked"] = var.get()
-                    STORE.set_data({"user": user_data})
-                return toggle
             check_box = ttk.Checkbutton(
                 todos_frame,
                 variable=var,
                 style="green.TCheckbutton",
-                command=make_toggle_callback(index, var)
+                command=make_toggle_callback(index, var, user_data)
             )
             check_box.grid(column=1, row=1 + index, pady=(5, 0), sticky="w")
 
